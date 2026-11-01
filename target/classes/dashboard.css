@@ -1,5 +1,4 @@
-/* Styles for the Dashboard screen only. Loaded by DashboardView itself, so theme.css stays untouched.
-   Every class starts with db- on purpose. */
+/* Styles for the Dashboard screen (Light + Dark mode). */
 .icon { -fx-fill: transparent; -fx-stroke-width: 2; -fx-stroke-line-cap: round; -fx-stroke-line-join: round; }
 .db-scroll { -fx-background: transparent; -fx-background-color: transparent; }
 .db-scroll > .viewport { -fx-background-color: transparent; }
@@ -42,5 +41,47 @@
 .db-notif-msg { -fx-font-size: 12px; -fx-text-fill: #0f172a; }
 .db-empty-note { -fx-text-fill: #64748b; -fx-font-size: 12px; }
 
-/* tables inside a card: drop the double border */
 .table-view.db-table { -fx-background-color: transparent; -fx-border-color: transparent; }
+
+/* ---- Dark Mode Overrides for Dashboard ---- */
+.root.dark .db-welcome,
+.root.dark .db-panel-title,
+.root.dark .db-stat-number,
+.root.dark .db-legend-count,
+.root.dark .db-donut-total,
+.root.dark .db-notif-msg {
+    -fx-text-fill: #f8fafc;
+}
+
+.root.dark .db-stat-label {
+    -fx-text-fill: #cbd5e1;
+}
+
+.root.dark .db-welcome-sub,
+.root.dark .db-date,
+.root.dark .db-panel-sub,
+.root.dark .db-sub-muted,
+.root.dark .db-legend-text,
+.root.dark .db-donut-caption,
+.root.dark .db-empty-note {
+    -fx-text-fill: #94a3b8;
+}
+
+.root.dark .db-sub-green  { -fx-text-fill: #4ade80; }
+.root.dark .db-sub-orange { -fx-text-fill: #fbbf24; }
+.root.dark .db-sub-red    { -fx-text-fill: #f87171; }
+
+.root.dark .db-tile-blue   { -fx-background-color: rgba(37, 99, 235, 0.22); }
+.root.dark .db-tile-blue .icon { -fx-stroke: #60a5fa; }
+.root.dark .db-tile-green  { -fx-background-color: rgba(22, 163, 74, 0.22); }
+.root.dark .db-tile-green .icon { -fx-stroke: #4ade80; }
+.root.dark .db-tile-orange { -fx-background-color: rgba(245, 158, 11, 0.22); }
+.root.dark .db-tile-orange .icon { -fx-stroke: #fbbf24; }
+.root.dark .db-tile-red    { -fx-background-color: rgba(239, 68, 68, 0.22); }
+.root.dark .db-tile-red .icon { -fx-stroke: #f87171; }
+
+.root.dark .db-pill-green  { -fx-background-color: rgba(22, 163, 74, 0.22); -fx-text-fill: #4ade80; }
+.root.dark .db-pill-orange { -fx-background-color: rgba(245, 158, 11, 0.22); -fx-text-fill: #fbbf24; }
+.root.dark .db-pill-red    { -fx-background-color: rgba(239, 68, 68, 0.22); -fx-text-fill: #f87171; }
+.root.dark .db-pill-blue   { -fx-background-color: rgba(37, 99, 235, 0.22); -fx-text-fill: #60a5fa; }
+.root.dark .db-notif-dot-read { -fx-fill: #475569; }
