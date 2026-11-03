@@ -2,7 +2,6 @@ package com.cebims.view;
 
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.cebims.api.ApiClient;
 import com.cebims.api.Lookups;
 import com.cebims.api.Session;
@@ -10,6 +9,7 @@ import com.cebims.view.dialogs.AuthDialogs;
 import com.cebims.view.util.Icons;
 import com.cebims.view.util.ThemeManager;
 import com.cebims.view.util.Ui;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -54,10 +54,11 @@ public class LoginView extends BorderPane {
         StackPane logoIcon = Icons.badge(Icons.BOX, "#ffffff", "#2563eb", 22, 44, 12);
         Label brandTitle = new Label("CEBIMS");
         brandTitle.setStyle("-fx-text-fill: #ffffff; -fx-font-size: 20px; -fx-font-weight: bold;");
-        Label brandSub = new Label("Campus Equipment Borrowing & Inventory Management System");
+        Label brandSub = new Label("Campus Equipment Borrowing &\nInventory Management System");
         brandSub.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 12px;");
         HBox brandHeader = new HBox(14, logoIcon, new VBox(2, brandTitle, brandSub));
         brandHeader.setAlignment(Pos.CENTER_LEFT);
+        
 
         // Hero Headline
         Label pill = new Label("CAMPUS PORTAL");

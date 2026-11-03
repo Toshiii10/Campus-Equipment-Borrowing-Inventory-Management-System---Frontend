@@ -1,6 +1,6 @@
 package com.cebims.api;
 
-/** Holds the logged-in user's CEBIMS session tokens in memory. Cleared on logout. */
+/** Holds the logged-in user's tokens in memory. Cleared on logout. */
 public final class Session {
     private static String accessToken, refreshToken, role, userId, displayName;
     private static Runnable onLoggedOut = () -> {};
@@ -15,7 +15,6 @@ public final class Session {
         Session.displayName = displayName;
     }
 
-    /** Called by ApiClient after a refresh succeeds: new token pair, same user. */
     static void setTokens(String access, String refresh) {
         accessToken = access;
         refreshToken = refresh;
@@ -25,7 +24,6 @@ public final class Session {
         accessToken = refreshToken = role = userId = displayName = null;
     }
 
-    /** Registered by App: what to do when the session can no longer be refreshed. */
     public static void setOnLoggedOut(Runnable r) { onLoggedOut = r; }
     static void fireLoggedOut() { clear(); onLoggedOut.run(); }
 
@@ -35,5 +33,6 @@ public final class Session {
     public static String userId()       { return userId; }
     public static String displayName()  { return displayName; }
     public static boolean loggedIn()    { return accessToken != null; }
-    public static boolean isStaff()     { return "MODERATOR".equalsIgnoreCase(role) || "ADMIN".equalsIgnoreCase(role); }
+    public static boolean isStaff()     { return "Moderator".equalsIgnoreCase(role) || "Admin".equalsIgnoreCase(role); }
+    public static boolean isAdmin()     { return "Admin".equalsIgnoreCase(role); }
 }

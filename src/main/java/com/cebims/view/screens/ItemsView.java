@@ -1,7 +1,10 @@
 package com.cebims.view.screens;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,9 +30,10 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.stage.FileChooser;
 
 /**
- * CEBIMS Equipment Inventory View (backed by /v1/items and /v1/items/mine).
+ * CEBIMS Equipment Inventory View (backed by /v1/items and /v1/items/mine) with CSV Export.
  */
 public class ItemsView extends BorderPane implements Reloadable {
     private final boolean mine;
@@ -59,6 +63,9 @@ public class ItemsView extends BorderPane implements Reloadable {
         table.getColumns().add(Ui.statusCol("Status", n -> Ui.t(n, "status"), 90));
         setCenter(table);
 
+        Button exportCsv = new Button("Export CSV");
+        exportCsv.setOnAction(e -> exportToCsv());
+
         Button refresh = new Button("Refresh");
         refresh.setOnAction(e -> load());
         Region spacer = new Region();
@@ -85,7 +92,7 @@ public class ItemsView extends BorderPane implements Reloadable {
                 PhotosDialog.open(getScene().getWindow(), Ui.t(sel, "id"), false, sel.path("images"), this::load);
             });
             del.setOnAction(e -> delete(table.getSelectionModel().getSelectedItem()));
-            bar.getChildren().addAll(add, edit, photos, del, spacer, refresh);
+            bar.getChildren().addAll(add, edit, photos, del, spacer, exportCsv, refresh);
         } else {
             search.setPromptText("Search equipment by name, brand, or color...");
             search.setPrefWidth(280);
@@ -100,7 +107,7 @@ public class ItemsView extends BorderPane implements Reloadable {
             view.getStyleClass().add("btn-primary");
             view.disableProperty().bind(table.getSelectionModel().selectedItemProperty().isNull());
             view.setOnAction(e -> openDetail(table.getSelectionModel().getSelectedItem()));
-            bar.getChildren().addAll(search, category, go, view, spacer, refresh);
+            bar.getChildren().addAll(search, category, go, view, spacer, exportCsv, refresh);
 
             table.setRowFactory(tv -> {
                 TableRow<JsonNode> row = new TableRow<>();
@@ -125,7 +132,16 @@ public class ItemsView extends BorderPane implements Reloadable {
         load();
     }
 
-    @Override public void reload() { load(); }
+    @Override
+    public void reload() {
+        if (!mine) {
+            Lookups.Option prevSel = category.getValue();
+            category.getItems().setAll(new Lookups.Option(null, "All categories"));
+            category.getItems().addAll(Lookups.categories());
+            category.setValue(prevSel != null ? prevSel : category.getItems().get(0));
+        }
+        load();
+    }
 
     public void searchFor(String q) {
         search.setText(q == null ? "" : q.trim());
@@ -159,6 +175,44 @@ public class ItemsView extends BorderPane implements Reloadable {
                 next.setDisable(page + 1 >= totalPages);
             }
         });
+    }
+
+    private void exportToCsv() {
+        if (table.getItems().isEmpty()) {
+            Ui.info("There are no equipment rows in the table to export.");
+            return;
+        }
+        FileChooser fc = new FileChooser();
+        fc.setTitle("Export Equipment Inventory to CSV");
+        fc.setInitialFileName(mine ? "my-listed-equipment.csv" : "cebims-equipment-inventory.csv");
+        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files (*.csv)", "*.csv"));
+        File file = fc.showSaveDialog(getScene().getWindow());
+        if (file == null) return;
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Equipment,Category,Color,Brand/Model,Location,Pickup Desk,Date Logged,Photos,Status\n");
+        for (JsonNode n : table.getItems()) {
+            sb.append(csvCell(Ui.t(n, "name"))).append(',')
+              .append(csvCell(Lookups.categoryName(Ui.t(n, "categoryId")))).append(',')
+              .append(csvCell(Ui.t(n, "color"))).append(',')
+              .append(csvCell(Ui.t(n, "brand"))).append(',')
+              .append(csvCell(Ui.t(n, "locationName"))).append(',')
+              .append(csvCell(Lookups.dropName(Ui.t(n, "dropLocationId")))).append(',')
+              .append(csvCell(Ui.t(n, "dateOccurred"))).append(',')
+              .append(n.path("images").size()).append(',')
+              .append(csvCell(Ui.t(n, "status"))).append('\n');
+        }
+        try {
+            Files.writeString(file.toPath(), sb.toString(), StandardCharsets.UTF_8);
+            Ui.info("Exported " + table.getItems().size() + " equipment records to:\n" + file.getAbsolutePath());
+        } catch (IOException ex) {
+            Ui.error("Could not save CSV file: " + ex.getMessage());
+        }
+    }
+
+    private static String csvCell(String val) {
+        String safe = val == null ? "" : val.replace("\"", "\"\"");
+        return "\"" + safe + "\"";
     }
 
     private void openDetail(JsonNode item) {

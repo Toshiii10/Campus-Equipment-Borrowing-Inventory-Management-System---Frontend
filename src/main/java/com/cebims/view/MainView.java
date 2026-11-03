@@ -73,7 +73,8 @@ public class MainView extends BorderPane {
             views.put("moderation", new ModerationView());
             views.put("staff-lost", new StaffLostView());
         }
-        if ("ADMIN".equals(Session.role())) {
+       
+        if ("Admin".equalsIgnoreCase(Session.role())) {
             views.put("admin-panel", new AdminView());
         }
 
@@ -143,7 +144,7 @@ public class MainView extends BorderPane {
             );
         }
 
-        if ("ADMIN".equals(Session.role())) {
+        if ("Admin".equalsIgnoreCase(Session.role())) {
             Label adminSec = new Label("ADMINISTRATION");
             adminSec.getStyleClass().add("sidebar-section");
             sidebar.getChildren().addAll(

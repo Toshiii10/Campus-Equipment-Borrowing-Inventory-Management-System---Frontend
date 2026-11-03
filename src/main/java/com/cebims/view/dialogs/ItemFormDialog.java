@@ -5,9 +5,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.cebims.api.ApiClient;
 import com.cebims.api.Lookups;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -27,7 +27,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 
-/** Create or edit a CEBIMS report. */
+/** Create or edit a CEBIMS equipment listing or missing equipment report with Condition Tagging. */
 public final class ItemFormDialog {
     private ItemFormDialog() {}
 
@@ -42,6 +42,16 @@ public final class ItemFormDialog {
         dialog.getDialogPane().getButtonTypes().addAll(saveType, ButtonType.CANCEL);
 
         TextField name = new TextField();
+        ComboBox<String> condition = new ComboBox<>();
+        condition.getItems().addAll(
+                "Working / Good",
+                "Like New",
+                "Minor Wear",
+                "Needs Calibration / Check"
+        );
+        condition.setValue("Working / Good");
+        condition.setMaxWidth(Double.MAX_VALUE);
+
         TextArea description = new TextArea();
         description.setPrefRowCount(3);
         ComboBox<Lookups.Option> category = new ComboBox<>();
@@ -66,9 +76,36 @@ public final class ItemFormDialog {
             }
         });
 
+        Lookups.load().thenRun(() -> Platform.runLater(() -> {
+            Lookups.Option prevCat = category.getValue();
+            Lookups.Option prevDrop = drop.getValue();
+            category.getItems().setAll(Lookups.categories());
+            drop.getItems().setAll(Lookups.dropLocations());
+            if (existing != null) {
+                select(category, existing.path("categoryId").asText());
+                if (!lost) select(drop, existing.path("dropLocationId").asText());
+            } else {
+                if (prevCat != null) select(category, prevCat.id());
+                else if (!category.getItems().isEmpty()) category.getSelectionModel().selectFirst();
+
+                if (!lost) {
+                    if (prevDrop != null) select(drop, prevDrop.id());
+                    else if (!drop.getItems().isEmpty()) drop.getSelectionModel().selectFirst();
+                }
+            }
+        }));
+
         if (existing != null) {
             name.setText(existing.path("name").asText());
-            description.setText(existing.path("description").asText());
+            String rawDesc = existing.path("description").asText("");
+            if (rawDesc.startsWith("[Condition: ")) {
+                int endIdx = rawDesc.indexOf("] ");
+                if (endIdx > 12) {
+                    condition.setValue(rawDesc.substring(12, endIdx));
+                    rawDesc = rawDesc.substring(endIdx + 2);
+                }
+            }
+            description.setText(rawDesc);
             select(category, existing.path("categoryId").asText());
             color.setText(existing.path("color").asText());
             brand.setText(existing.path("brand").asText());
@@ -85,11 +122,12 @@ public final class ItemFormDialog {
         grid.setPadding(new Insets(10));
         int r = 0;
         grid.addRow(r++, new Label("Equipment Name"), name);
+        if (!lost) grid.addRow(r++, new Label("Condition"), condition);
         grid.addRow(r++, new Label("Description"), description);
         grid.addRow(r++, new Label("Category"), category);
         grid.addRow(r++, new Label("Color"), color);
         grid.addRow(r++, new Label("Brand/Model"), brand);
-        grid.addRow(r++, new Label(lost ? "Serial / Private Marks" : "Serial / Private Marks"), marks);
+        grid.addRow(r++, new Label("Serial / Private Marks"), marks);
         grid.addRow(r++, new Label(lost ? "Last known location" : "Current location"), where);
         if (!lost) grid.addRow(r++, new Label("Pickup Desk (Drop-off)"), drop);
         grid.addRow(r++, new Label(lost ? "Date went missing" : "Date registered"), date);
@@ -106,15 +144,28 @@ public final class ItemFormDialog {
         saveBtn.addEventFilter(ActionEvent.ACTION, ev -> {
             ev.consume();
             error.setText("");
+            if (category.getItems().isEmpty()) {
+                error.setText("No Categories exist yet! Go to 'Users & Settings' -> 'Equipment Categories' to add one first.");
+                return;
+            }
+            if (!lost && drop.getItems().isEmpty()) {
+                error.setText("No Pickup/Drop-off Locations exist yet! Go to 'Users & Settings' -> 'Pickup / Drop-off Locations' to add one first.");
+                return;
+            }
             if (blank(name) || blank(description) || blank(color) || blank(brand) || blank(marks)
                     || blank(where) || category.getValue() == null || (!lost && drop.getValue() == null)
                     || date.getValue() == null) {
                 error.setText("Please fill in every field.");
                 return;
             }
+            String finalDesc = description.getText().trim();
+            if (!lost && condition.getValue() != null) {
+                finalDesc = "[Condition: " + condition.getValue() + "] " + finalDesc;
+            }
+
             Map<String, Object> body = new LinkedHashMap<>();
             body.put("name", name.getText().trim());
-            body.put("description", description.getText().trim());
+            body.put("description", finalDesc);
             body.put("categoryId", category.getValue().id());
             body.put("color", color.getText().trim());
             body.put("brand", brand.getText().trim());

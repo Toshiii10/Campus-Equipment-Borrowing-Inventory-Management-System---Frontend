@@ -436,3 +436,92 @@
 .root.dark .separator *.line {
     -fx-border-color: #334155;
 }
+
+/* Make the right-side filler of TableView headers match the column header bar */
+.table-view .filler,
+.table-view .show-hide-columns-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+/* Remove the default grey box behind the TabPane header */
+.tab-pane > .tab-header-area {
+    -fx-padding: 0 0 12 0;
+}
+
+.tab-pane > .tab-header-area > .tab-header-background {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #e2e8f0 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 8 8 0 0;
+    -fx-padding: 9 18 9 18;
+    -fx-border-color: transparent transparent transparent transparent;
+    -fx-border-width: 0 0 2 0;
+    -fx-cursor: hand;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab:hover {
+    -fx-background-color: #f1f5f9;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab:selected {
+    -fx-background-color: #eff6ff;
+    -fx-border-color: transparent transparent #2563eb transparent;
+    -fx-border-width: 0 0 2.5 0;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab .tab-label {
+    -fx-text-fill: #64748b;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab:hover .tab-label {
+    -fx-text-fill: #1e293b;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab:selected .tab-label {
+    -fx-text-fill: #2563eb;
+    -fx-font-weight: bold;
+}
+
+/* Remove the ugly dotted focus ring inside tabs */
+.tab-pane:focused > .tab-header-area > .headers-region > .tab:selected .focus-indicator {
+    -fx-border-color: transparent;
+}
+
+.tab-pane > .tab-content-area {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+/* ---- Dark Mode Overrides for TabPane ---- */
+.root.dark .tab-pane > .tab-header-area > .tab-header-background {
+    -fx-border-color: transparent transparent #334155 transparent;
+}
+
+.root.dark .tab-pane > .tab-header-area > .headers-region > .tab:hover {
+    -fx-background-color: #0f172a;
+}
+
+.root.dark .tab-pane > .tab-header-area > .headers-region > .tab:selected {
+    -fx-background-color: rgba(37, 99, 235, 0.18);
+    -fx-border-color: transparent transparent #60a5fa transparent;
+}
+
+.root.dark .tab-pane > .tab-header-area > .headers-region > .tab .tab-label {
+    -fx-text-fill: #94a3b8;
+}
+
+.root.dark .tab-pane > .tab-header-area > .headers-region > .tab:hover .tab-label {
+    -fx-text-fill: #f8fafc;
+}
+
+.root.dark .tab-pane > .tab-header-area > .headers-region > .tab:selected .tab-label {
+    -fx-text-fill: #60a5fa;
+}

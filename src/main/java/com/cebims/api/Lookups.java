@@ -1,14 +1,14 @@
 package com.cebims.api;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
-/** Equipment categories and drop-off locations, loaded once after login for dropdowns and table columns. */
+/** Equipment categories and drop-off locations, loaded after login and refreshed when Admin edits them. */
 public final class Lookups {
     public record Option(String id, String name) {
         @Override public String toString() { return name; }
@@ -21,8 +21,8 @@ public final class Lookups {
 
     private Lookups() {}
 
-    public static List<Option> categories()    { return categories; }
-    public static List<Option> dropLocations() { return dropLocations; }
+    public static List<Option> categories()      { return categories; }
+    public static List<Option> dropLocations()   { return dropLocations; }
     public static String categoryName(String id) { return categoryNames.getOrDefault(id, id); }
     public static String dropName(String id)     { return dropNames.getOrDefault(id, id); }
 
@@ -36,13 +36,19 @@ public final class Lookups {
         return CompletableFuture.allOf(c, d).exceptionally(e -> null);
     }
 
-    private static List<Option> parse(JsonNode array, Map<String, String> names) {
+    private static List<Option> parse(JsonNode root, Map<String, String> names) {
         List<Option> out = new ArrayList<>();
         names.clear();
+        if (root == null) return out;
+        JsonNode array = root.isArray() ? root : root.path("content");
         for (JsonNode n : array) {
-            Option o = new Option(n.path("id").asText(), n.path("name").asText());
-            out.add(o);
-            names.put(o.id(), o.name());
+            String id = n.path("id").asText("");
+            String name = n.path("name").asText("");
+            if (!id.isEmpty() && !name.isEmpty()) {
+                Option o = new Option(id, name);
+                out.add(o);
+                names.put(o.id(), o.name());
+            }
         }
         return out;
     }
